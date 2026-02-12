@@ -20,18 +20,39 @@
                 
                 if (data.status === 'ok') {
                     container.innerHTML = '';
+                    
+                    const jetzt = new Date();
+                    const siebenTageInMs = 7 * 24 * 60 * 60 * 1000;
+
                     data.items.forEach(item => {
-                        const date = new Date(item.pubDate).toLocaleString('de-DE', {
-                            day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-                        });
+                        const pubDate = new Date(item.pubDate);
                         
-                        const itemHtml = `
-                            <div style="margin-bottom: 10px; padding: 8px; background: #21262d; border-radius: 4px; border-left: 3px solid #d10019;">
-                                <a href="${item.link}" target="_blank" style="text-decoration: none; color: #58a6ff; font-size: 13px; font-weight: 600; display: block;">${item.title}</a>
-                                <small style="color: #8b949e; font-size: 10px; display: block; margin-top: 4px;">${date} Uhr</small>
-                            </div>`;
-                        container.insertAdjacentHTML('beforeend', itemHtml);
+                        // Filter: Nur die letzten 7 Tage
+                        if (jetzt - pubDate <= siebenTageInMs) {
+                            
+                            // Zeit +1 Stunde
+                            const korrigierteZeit = new Date(pubDate.getTime() + (1 * 60 * 60 * 1000));
+                            
+                            const dateString = korrigierteZeit.toLocaleString('de-DE', {
+                                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+                            });
+
+                            // Beschreibung säubern (HTML-Tags entfernen, falls vorhanden)
+                            const beschreibung = item.description.replace(/<[^>]*>?/gm, '');
+
+                            const itemHtml = `
+                                <div style="margin-bottom: 12px; padding: 10px; background: #21262d; border-radius: 4px; border-left: 3px solid #d10019;">
+                                    <a href="${item.link}" target="_blank" style="text-decoration: none; color: #58a6ff; font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">${item.title}</a>
+                                    <div style="color: #c9d1d9; font-size: 12px; line-height: 1.4; margin-bottom: 6px;">${beschreibung}</div>
+                                    <small style="color: #8b949e; font-size: 10px; display: block;">${dateString} Uhr</small>
+                                </div>`;
+                            container.insertAdjacentHTML('beforeend', itemHtml);
+                        }
                     });
+
+                    if (container.innerHTML === '') {
+                        container.innerHTML = "Keine Meldungen aus den letzten 7 Tagen.";
+                    }
                 }
             } catch (e) {
                 document.getElementById('heise-content').innerHTML = "Fehler beim Laden.";
