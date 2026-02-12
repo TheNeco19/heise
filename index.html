@@ -1,8 +1,24 @@
-<div id="heise-container" style="background-color: #161b22; color: #e6edf3; font-family: sans-serif; width: 100%; height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
-<div style="background-color: #d10019; color: white; padding: 14px; font-weight: bold; text-align: center; font-size: 18px; flex-shrink: 0;">
+<style>
+/* Versteckt Scrollbalken für die gesamte Seite */
+body, html {
+margin: 0;
+padding: 0;
+overflow: hidden;
+}
+
+/* Versteckt Scrollbalken für den Heise-Content */
+#heise-content::-webkit-scrollbar { display: none; }
+#heise-content {
+-ms-overflow-style: none;
+scrollbar-width: none;
+}
+</style>
+
+<div id="heise-container" style="background-color: #161b22; color: #e6edf3; font-family: sans-serif; width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; top: 0; left: 0;">
+<div style="background-color: #d10019; color: white; padding: 14px; font-weight: bold; text-align: center; font-size: 18px; flex-shrink: 0; z-index: 10;">
 HEISE SECURITY ALERTS
 </div>
-<div id="heise-content" style="padding: 14px; flex-grow: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #30363d transparent;">
+<div id="heise-content" style="padding: 14px; flex-grow: 1; overflow-y: auto;">
 Lade Meldungen...
 </div>
 </div>
@@ -28,7 +44,7 @@ CONTENT.innerHTML = items
 <a href="${item.link}" target="_blank" style="text-decoration: none; color: #58a6ff; font-size: 15px; font-weight: 600; display: block; margin-bottom: 6px;">${item.title}</a>
 <p style="color: #c9d1d9; font-size: 14px; line-height: 1.5; margin: 0 0 8px 0;">${item.description.replace(/<[^>]*>?/gm, '')}</p>
 <small style="color: #8b949e; font-size: 12px;">${new Date(new Date(item.pubDate).getTime() + 3600000).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} Uhr</small>
-</div>`).join('') || "Keine Meldungen aus den letzten 7 Tagen.";
+</div>`).join('') || "Keine Meldungen.";
 } catch (e) {
 CONTENT.innerHTML = "Fehler beim Laden.";
 }
