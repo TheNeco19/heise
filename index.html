@@ -1,31 +1,54 @@
 <style>
+/* Versteckt Scrollbalken für die gesamte Seite */
+body, html {
+margin: 0;
+padding: 0;
+overflow: hidden;
+}
+
+/* Versteckt Scrollbalken für den Heise-Content */
 body, html { margin: 0; padding: 0; overflow: hidden; }
 #heise-content::-webkit-scrollbar { display: none; }
+#heise-content {
+-ms-overflow-style: none;
+scrollbar-width: none;
+}
 #heise-content { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
 <div id="heise-container" style="background-color: #161b22; color: #e6edf3; font-family: sans-serif; width: 100vw; height: 100vh; display: flex; flex-direction: column; overflow: hidden; position: fixed; top: 0; left: 0;">
-<div style="background-color: #d10019; color: white; padding: 14px; font-weight: bold; text-align: center; font-size: 18px; flex-shrink: 0; z-index: 10;">
-HEISE SECURITY ALERTS
-</div>
-<div id="heise-content" style="padding: 14px; flex-grow: 1; overflow-y: auto;">
-Lade Meldungen...
-</div>
-</div>
-
-<script>
+@@ -27,30 +17,32 @@
 (function() {
 const CONTENT = document.getElementById('heise-content');
 const RSS_URL = encodeURIComponent(`https://www.heise.de/security/feed.xml`);
+const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${RSS_URL}`;
 
 async function loadHeise() {
+try {
+const response = await fetch(API_URL);
+const { status, items } = await response.json();
+if (status !== 'ok') throw new Error();
     try {
+        // Dieser Zeitstempel zwingt den Browser (und GitHub), die Daten neu zu laden
         const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${RSS_URL}&_=${new Date().getTime()}`;
 
+const limit = Date.now() - 7 * 24 * 60 * 60 * 1000;
         const response = await fetch(API_URL);
         const { status, items } = await response.json();
         if (status !== 'ok') throw new Error();
 
+CONTENT.innerHTML = items
+.filter(item => new Date(item.pubDate).getTime() > limit)
+.map(item => `
+<div style="margin-bottom: 12px; padding: 12px; background: #21262d; border-radius: 6px; border-left: 4px solid #d10019;">
+<a href="${item.link}" target="_blank" style="text-decoration: none; color: #58a6ff; font-size: 15px; font-weight: 600; display: block; margin-bottom: 6px;">${item.title}</a>
+<p style="color: #c9d1d9; font-size: 14px; line-height: 1.5; margin: 0 0 8px 0;">${item.description.replace(/<[^>]*>?/gm, '')}</p>
+<small style="color: #8b949e; font-size: 12px;">${new Date(new Date(item.pubDate).getTime() + 3600000).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} Uhr</small>
+</div>`).join('') || "Keine Meldungen.";
+} catch (e) {
+CONTENT.innerHTML = "Fehler beim Laden.";
+}
+        const limit = Date.now() - 604800000; // 7 Tage in Millisekunden
 
         CONTENT.innerHTML = items
             .filter(item => new Date(item.pubDate).getTime() > limit)
@@ -42,5 +65,6 @@ async function loadHeise() {
 
 loadHeise();
 setInterval(loadHeise, 900000);
+setInterval(loadHeise, 900000); // Alle 15 Minuten
 })();
 </script>
