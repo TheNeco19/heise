@@ -20,14 +20,12 @@ const RSS_URL = encodeURIComponent(`https://www.heise.de/security/feed.xml`);
 
 async function loadHeise() {
     try {
-        // Dieser Zeitstempel zwingt den Browser (und GitHub), die Daten neu zu laden
         const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${RSS_URL}&_=${new Date().getTime()}`;
 
         const response = await fetch(API_URL);
         const { status, items } = await response.json();
         if (status !== 'ok') throw new Error();
 
-        const limit = Date.now() - 604800000; // 7 Tage in Millisekunden
 
         CONTENT.innerHTML = items
             .filter(item => new Date(item.pubDate).getTime() > limit)
@@ -43,6 +41,6 @@ async function loadHeise() {
 }
 
 loadHeise();
-setInterval(loadHeise, 900000); // Alle 15 Minuten
+setInterval(loadHeise, 900000);
 })();
 </script>
